@@ -41,6 +41,7 @@ import           Language.Fixpoint.Types.PrettyPrint ()
 import           Language.Fixpoint.Types.Visitor      as V
 import           Language.Fixpoint.SortCheck          (ElabM)
 import qualified Language.Fixpoint.SortCheck          as So
+import qualified Language.Fixpoint.Smt.Theories       as Thy
 import           Language.Fixpoint.Misc               (ensurePath)
 import qualified Language.Fixpoint.Misc               as Misc
 import qualified Language.Fixpoint.Utils.Files        as Files
@@ -66,9 +67,10 @@ init cfg si ks =
 initQualifierEnv :: (F.Fixpoint a) => Config -> F.SInfo a -> F.SEnv F.Sort
 initQualifierEnv cfg si
   | scraping  = So.globalEnv cfg si <> instConstants si
-  | otherwise = instConstants si
+  | otherwise = instConstants si <> definedFuns
   where
     scraping = scrape cfg /= No
+    definedFuns = F.tsSort <$> Thy.theorySymbols (F.defns si)
 
 --------------------------------------------------------------------------------
 -- | [NOTE:qual-cluster] It is wasteful to perform instantiation *individually*
